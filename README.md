@@ -17,7 +17,8 @@ Firstly, we normalize punctuation and tokenize all sentences with the Moses toke
  Our models are  mainly based on a CNN architecture [(Gehring et al., 2017)](https://arxiv.org/abs/1705.03122) . This convolutional model exploits  BPE.
  The architecture is as follows: 20 layers in the encoder and 20 layers in the decoder,  a multiplicative attention in every decoder layer, a kernel  width of 3  for both the encoder and the decoder, 
 a hidden and an embedding size of 512, and 256 for the encoder and decoder layers. 
-## Pre-trained Models
+
+
 
 We train our proposed **Arabic&harr;13-languages** MT models on the parallel data  described [(here)](https://github.com/EMNLP-2020/ArData) using 4  GPUs for 7 days (for each model).  
 For all models, the learning rate was set to 0.25, a dropout of 0.2, 512 as batch size, and a maximum tokens of 4,000. All this models are available in the table below:
@@ -33,3 +34,54 @@ For all models, the learning rate was set to 0.25, a dropout of 0.2, 512 as batc
 ---
 
 **(Tiedemann. 2012)** Jorg Tiedemann. 2012. Parallel data, tools and interfaces in opus. 2012:2214–2218.
+
+
+
+
+## Training Example 
+
+
+### Preprocess/binarize the data
+```
+src=ar
+tgt=en
+TEXT=Data_Input.tokenized.$src.$tgt
+fairseq-preprocess --source-lang $src --target-lang $tgt \
+     --trainpref $TEXT/train --validpref $TEXT/valid --testpref $TEXT/test \
+     --destdir data-bin/$Data_Input.tokenized.$src-$tgt
+```
+### Training the ar-en model
+
+```
+fairseq-train data-bin/$Data_Input.tokenized.$src-$tgt  --source-lang  $tgt  --target-lang  $src \ 
+--lr 0.25 --clip-norm 0.1 --dropout 0.2 --max-tokens 4000 --arch fconv   \
+--save-dir checkpoints/Bench-fconv-$tgt-$src.sub
+```
+
+## Interactive Translation Examples
+
+### Pre-trained Models
+```
+Beam=10
+Best_tr=1
+fairseq-interactive data-bin/$Data_Input.tokenized.$src-$tgt  \
+  --path $Chk_pt_path/$Checkpoint  \
+  --beam $Beam --nbest $Best_tr --tokenizer moses    --bpe subword_nmt \
+  --bpe-codes $Codes  --batch-size 128 --max-sentences 128  --buffer-size 128 --remove-bpe  \
+  --source-lang $src  --target-lang $tgt 
+  
+```
+### Output
+```
+
+S-738	اعطيه هذا و اخبريه انني كنت امزح
+T-738	tell him i was just kidding .
+H-738	-0.2692852318286896	give him this and tell him i was joking .
+P-738	-0.2532 -0.7831 -0.5164 -0.3192 -0.0928 -0.0160 -0.0965 -0.2905 -0.8000 -0.0025 -0.0599 -0.0014
+
+S-4322	اعرف كل ما قام به للعثور علي عمل .
+T-4322	i know all he has done to find work .
+H-4322	-0.47998669743537903	i know all he did to find a job .
+P-4322	-0.1533 -0.0191 -0.6882 -0.4971 -2.2777 -0.2763 -0.0512 -0.7616 -0.4628 -0.0912 -0.0014
+
+```
