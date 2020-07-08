@@ -67,7 +67,7 @@ Best_tr=1
 fairseq-interactive data-bin/$Data_Input.tokenized.$src-$tgt  \
   --path $Chk_pt_path/$Checkpoint  \
   --beam $Beam --nbest $Best_tr --tokenizer moses    --bpe subword_nmt \
-  --bpe-codes $Codes  --batch-size 128 --max-sentences 128  --buffer-size 128 --remove-bpe  \
+  --bpe-codes $Codes  --remove-bpe  \
   --source-lang $src  --target-lang $tgt 
   
 ```
